@@ -1,0 +1,99 @@
+package com.example.movierating.util
+
+import android.content.Context
+import android.media.MediaRecorder
+import android.util.Log
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+class VoiceRecorder(private val context: Context) {
+
+    private var mediaRecorder: MediaRecorder? = null
+    private var outputFile: File? = null
+
+
+//     Starts recording to a new file for the given movieId.
+//     Returns the absolute path of the file if successful, or null on failure.
+
+    fun startRecording(movieId: Int): String? {
+        return try {
+            val dir = File(context.filesDir, "voice_reviews")
+            if (!dir.exists()) dir.mkdirs()
+
+            val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+            val file = File(dir, "movie_${movieId}_$timestamp.m4a")
+
+            mediaRecorder = MediaRecorder().apply {
+                // Use the basic MIC source – most compatible
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                // MP4 container with AAC is standard and works everywhere
+                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                // Slightly lower bitrate to reduce glitches on weak setups
+                setAudioEncodingBitRate(96_000)
+                setAudioSamplingRate(44_100)
+                setOutputFile(file.absolutePath)
+                prepare()
+                start()
+            }
+
+            outputFile = file
+            file.absolutePath
+        } catch (e: Exception) {
+            Log.e("VoiceRecorder", "startRecording failed: ${e.message}", e)
+            outputFile?.delete()
+            outputFile = null
+            mediaRecorder?.release()
+            mediaRecorder = null
+            null
+        }
+    }
+
+
+
+     //Stops the current recording and returns the file path,
+    //or null if something went wrong.
+
+    fun stopRecording(): String? {
+        val file = outputFile
+        return try {
+            mediaRecorder?.apply {
+                stop()
+                reset()
+                release()
+            }
+            mediaRecorder = null
+            outputFile = null
+            file?.absolutePath
+        } catch (e: Exception) {
+            Log.e("VoiceRecorder", "stopRecording failed: ${e.message}")
+            file?.delete()
+            mediaRecorder?.release()
+            mediaRecorder = null
+            outputFile = null
+            null
+        }
+    }
+
+
+    //Cancel recording and delete any partially written file.
+
+    fun cancel() {
+        try {
+            outputFile?.delete()
+            mediaRecorder?.apply {
+                reset()
+                release()
+            }
+        } catch (_: Exception) {
+        } finally {
+            mediaRecorder = null
+            outputFile = null
+        }
+    }
+}
+
+
+
