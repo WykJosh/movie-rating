@@ -116,22 +116,22 @@ Because the UI logic only looks at the Boolean result of checkTrial() to decide 
 
 ### Modify application
 
-We demonstrate how the MovieRatingApp APK can be unpacked, modified at bytecode level, and rebuilt to change its behaviour and visuals without touching the original Kotlin source. The goal was to force a custom SpiderKOREMAN image to appear as the poster for every movie on both the list and detail screens.​
+We demonstrate how the MovieRatingApp APK can be unpacked, modified at bytecode level, and rebuilt to change its behaviour and visuals without touching the original Kotlin source. The goal was to force a custom SpiderPoster image to appear as the poster for every movie on both the list and detail screens.​
 
 - Decompiling the original APK
   The starting point is the signed MovieRatingApp.apk. Using apktool, the APK is decompiled into a folder structure containing resources and smali files (the human‑readable form of Dalvik bytecode). We locate the generated smali for the movie list item and the movie detail screen, which are responsible for loading and showing poster URLs.​
 
 - Patching smali to override poster URLs
-  In the detail screen and the list item smali, the code that receives the poster URL from the app logic originally writes the result of `getPosterUrl` into a register using move-result-object. These instructions are replaced with `const-string` instructions that load a fixed URL pointing to the SpiderKOREMAN image. As a result, any value coming from the API is ignored and the same custom URL is always used instead.​
+  In the detail screen and the list item smali, the code that receives the poster URL from the app logic originally writes the result of `getPosterUrl` into a register using move-result-object. These instructions are replaced with `const-string` instructions that load a fixed URL pointing to the SpiderPoster image. As a result, any value coming from the API is ignored and the same custom URL is always used instead.​
 
 - Rebuilding, aligning, and signing the modified APK
   After editing the smali, the project is rebuilt into a new APK with apktool, then processed with `zipalign` to meet Android’s alignment requirements, and finally signed with a custom key using `apksigner`. The original application is uninstalled and the injected version is installed. This produces an APK that the system accepts as a normal app, but with the patched behaviour included.​
 
 - Effect on the running app
-  When the injected APK is launched, every movie in the list and detail screens now displays the `SpiderKOREMAN` poster, independent of what the backend API returns. This illustrates how reverse engineering and smali patching can be used to alter an application’s presentation and logic purely by working on the compiled APK, an attacker can change how the app looks and behaves without needing the original Kotlin source.
+  When the injected APK is launched, every movie in the list and detail screens now displays the `SpiderPoster` poster, independent of what the backend API returns. This illustrates how reverse engineering and smali patching can be used to alter an application’s presentation and logic purely by working on the compiled APK, an attacker can change how the app looks and behaves without needing the original Kotlin source.
 
-<img src="./documentation/ReadmeImages/SpiderKOREMAN_Screen1.png" alt="SpiderKOREMAN_Screen1" width="220" />
-<img src="./documentation/ReadmeImages/SpiderKOREMAN_Screen2.png" alt="SpiderKOREMAN_Screen2" width="220" />
+<img src="./documentation/ReadmeImages/SpiderPoster_Screen1.png" alt="SpiderPoster_Screen1" width="220" />
+<img src="./documentation/ReadmeImages/SpiderPoster_Screen2.png" alt="SpiderPoster_Screen2" width="220" />
 
 ### ![](./documentation/ReadmeImages/Root.png) Root
 
