@@ -41,13 +41,12 @@ Java.perform(function () {
   // 3. CertificatePinner Bypass (Builder + Dynamic)
   try {
     var Pinner = Java.use("okhttp3.CertificatePinner");
-    // Strategy A: Hook Builder to return empty pinner
+  
     Java.use("okhttp3.CertificatePinner$Builder").build.implementation =
       function () {
         return Pinner.DEFAULT.value;
       };
 
-    // Strategy B: Hook all 'check' overloads dynamically
     var methods = Pinner.class.getDeclaredMethods();
     for (var i = 0; i < methods.length; i++) {
       if (methods[i].getName() === "check") {
@@ -63,3 +62,5 @@ Java.perform(function () {
   } catch (e) {}
   console.log("[+] SSL Bypass Active");
 });
+
+
